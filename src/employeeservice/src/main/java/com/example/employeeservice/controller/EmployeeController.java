@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import static net.logstash.logback.argument.StructuredArguments.keyValue;
 
 @RestController
 public class EmployeeController {
@@ -23,31 +24,31 @@ public class EmployeeController {
 
     @PostMapping("/")
     public Employee add(@RequestBody Employee employee) {
-        LOGGER.info("Employee add: {}", employee);
+        LOGGER.info("Add employee", keyValue("employee", employee), keyValue("endpoint", "/"));
         return repository.save(employee);
     }
 
     @GetMapping("/{id}")
     public Employee findById(@PathVariable("id") String id) {
-        LOGGER.info("Employee find: id={}", id);
+        LOGGER.info("Find employee", keyValue("id", id), keyValue("endpoint", "/{id}"));
         return repository.findById(id).get();
     }
 
     @GetMapping("/")
     public Iterable<Employee> findAll() {
-        LOGGER.info("Employee find");
+        LOGGER.info("Find all employees", keyValue("endpoint", "/"));
         return repository.findAll();
     }
 
     @GetMapping("/department/{departmentId}")
     public List<Employee> findByDepartment(@PathVariable("departmentId") String departmentId) {
-        LOGGER.info("Employee find: departmentId={}", departmentId);
+        LOGGER.info("Find employee by departmentId", keyValue("departmentId", departmentId), keyValue("endpoint", "/department/{departmentId}"));
         return repository.findByDepartmentId(departmentId);
     }
 
     @GetMapping("/organization/{organizationId}")
     public List<Employee> findByOrganization(@PathVariable("organizationId") String organizationId) {
-        LOGGER.info("Employee find: organizationId={}", organizationId);
+        LOGGER.info("Find employee by organizationId", keyValue("organizationId", organizationId), keyValue("endpoint", "/organizationId/{organizationId}"));
         return repository.findByOrganizationId(organizationId);
     }
 
