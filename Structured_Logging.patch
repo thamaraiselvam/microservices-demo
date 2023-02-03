@@ -1,0 +1,123 @@
+Index: src/employeeservice/build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/employeeservice/build.gradle b/src/employeeservice/build.gradle
+--- a/src/employeeservice/build.gradle	(revision 02f0c428b78f4bbbbd97a0cdf2964d9249a751d7)
++++ b/src/employeeservice/build.gradle	(date 1675406270367)
+@@ -20,6 +20,10 @@
+ 	implementation 'org.springframework.boot:spring-boot-starter-web:2.7.8'
+ 	implementation 'org.springframework.boot:spring-boot-starter-actuator:2.7.8'
+ 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb:2.7.8'
++	implementation 'org.springframework.boot:spring-boot-starter-log4j2:3.0.2'
++	implementation 'co.elastic.logging:log4j2-ecs-layout:0.1.3'
++	implementation 'org.springframework.boot:spring-boot-starter:3.0.2'
++
+ 
+ 	implementation 'org.springdoc:springdoc-openapi-ui:1.6.14'
+ }
+Index: src/employeeservice/src/main/resources/log4j2.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/employeeservice/src/main/resources/log4j2.xml b/src/employeeservice/src/main/resources/log4j2.xml
+new file mode 100644
+--- /dev/null	(date 1675406338304)
++++ b/src/employeeservice/src/main/resources/log4j2.xml	(date 1675406338304)
+@@ -0,0 +1,20 @@
++<Configuration name="LogToConsole" target="SYSTEM_OUT">
++    <Appenders>
++        <Console name="LogToConsole" target="SYSTEM_OUT">
++            <EcsLayout serviceName="employeeservice"/>
++        </Console>
++        <File name="FileAppender" fileName="logs/app.log.json">
++            <EcsLayout serviceName="employeeservice"/>
++        </File>
++    </Appenders>
++    <Loggers>
++        <Root>
++            <AppenderRef ref="LogToConsole" />
++            <AppenderRef ref="FileAppender" />
++        </Root>
++        <Logger name="none.rks.Main" level="debug" additivity="false">
++            <AppenderRef ref="LogToConsole" />
++            <AppenderRef ref="FileAppender" />
++        </Logger>
++    </Loggers>
++</Configuration>
+\ No newline at end of file
+Index: src/employeeservice/src/main/java/com/example/employeeservice/controller/EmployeeController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/employeeservice/src/main/java/com/example/employeeservice/controller/EmployeeController.java b/src/employeeservice/src/main/java/com/example/employeeservice/controller/EmployeeController.java
+--- a/src/employeeservice/src/main/java/com/example/employeeservice/controller/EmployeeController.java	(revision 02f0c428b78f4bbbbd97a0cdf2964d9249a751d7)
++++ b/src/employeeservice/src/main/java/com/example/employeeservice/controller/EmployeeController.java	(date 1675406622745)
+@@ -4,50 +4,56 @@
+ 
+ import com.example.employeeservice.model.Employee;
+ import com.example.employeeservice.repository.EmployeeRepository;
+-import org.slf4j.Logger;
+-import org.slf4j.LoggerFactory;
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.web.bind.annotation.GetMapping;
+ import org.springframework.web.bind.annotation.PathVariable;
+ import org.springframework.web.bind.annotation.PostMapping;
+ import org.springframework.web.bind.annotation.RequestBody;
+ import org.springframework.web.bind.annotation.RestController;
++import org.apache.logging.log4j.LogManager;
++import org.apache.logging.log4j.Logger;
++import org.apache.logging.log4j.message.StringMapMessage;
+ 
+ @RestController
+ public class EmployeeController {
+ 
+-    private static final Logger LOGGER = LoggerFactory.getLogger(EmployeeController.class);
++//    private static final Logger LOGGER = LoggerFactory.getLogger(EmployeeController.class);
++    private static final Logger log = LogManager.getLogger(EmployeeController.class);
+ 
+     @Autowired
+     EmployeeRepository repository;
+ 
+     @PostMapping("/")
+     public Employee add(@RequestBody Employee employee) {
+-        LOGGER.info("Employee add: {}", employee);
++        log.info("Employee add: {}", employee);
++        log.info(new StringMapMessage()
++                .with("message", "Employee add")
++                .with("endpoint", "/")
++                .with("employee", employee));
+         return repository.save(employee);
+     }
+ 
+     @GetMapping("/{id}")
+     public Employee findById(@PathVariable("id") String id) {
+-        LOGGER.info("Employee find: id={}", id);
++        log.info("Employee find: id={}", id);
+         return repository.findById(id).get();
+     }
+ 
+     @GetMapping("/")
+     public Iterable<Employee> findAll() {
+-        LOGGER.info("Employee find");
++        log.info("Employee find");
+         return repository.findAll();
+     }
+ 
+     @GetMapping("/department/{departmentId}")
+     public List<Employee> findByDepartment(@PathVariable("departmentId") String departmentId) {
+-        LOGGER.info("Employee find: departmentId={}", departmentId);
++        log.info("Employee find: departmentId={}", departmentId);
+         return repository.findByDepartmentId(departmentId);
+     }
+ 
+     @GetMapping("/organization/{organizationId}")
+     public List<Employee> findByOrganization(@PathVariable("organizationId") String organizationId) {
+-        LOGGER.info("Employee find: organizationId={}", organizationId);
++        log.info("Employee find: organizationId={}", organizationId);
+         return repository.findByOrganizationId(organizationId);
+     }
+ 

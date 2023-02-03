@@ -1,0 +1,20 @@
+<Configuration name="LogToConsole" target="SYSTEM_OUT">
+    <Appenders>
+        <Console name="LogToConsole" target="SYSTEM_OUT">
+            <EcsLayout serviceName="employeeservice"/>
+        </Console>
+        <File name="FileAppender" fileName="logs/app.log.json">
+            <EcsLayout serviceName="employeeservice"/>
+        </File>
+    </Appenders>
+    <Loggers>
+        <Root>
+            <AppenderRef ref="LogToConsole" />
+            <AppenderRef ref="FileAppender" />
+        </Root>
+        <Logger name="none.rks.Main" level="debug" additivity="false">
+            <AppenderRef ref="LogToConsole" />
+            <AppenderRef ref="FileAppender" />
+        </Logger>
+    </Loggers>
+</Configuration>
